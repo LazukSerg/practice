@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Client</title>
+</head>
+<body>
+    
+  <div>Доступные ключевые слова: cat, house, tv</div>
+  <input id="keyword" type="text" placeholder="Введите слово">
+  <button onclick="getUrls()">Получить ссылки</button>
+  <div id="urls"></div>
+  <img id="img" src="" alt="" width="400px">
+  <div>Загрузки</div>
+  <div id="downloads"></div>
+
+
+  <script>
+
+    var showList
+    var showContainer
+    window.addEventListener('load', () => {
+      
+      var keys = Object.keys(localStorage)
+      showList = document.getElementById('downloads');
+      showContainer = document.createElement('div');
+      showContainer.style.marginBottom = '10px';
+      showList.appendChild(showContainer)
+      for(var key of keys) {
+        createDownload(key)
+      }
+    })
+    const socket = new WebSocket('ws://localhost:8080');
+
+    socket.onopen = function() {
+      console.log('Клиент подключен.');
+    }
+
+    socket.onmessage = function(event) {
+      let msg = JSON.parse(event.data)
+      if(msg.type === "data") {
+        const img = document.querySelector("img");
+        img.src = msg.data
+        if(localStorage.getItem(msg.key) == null) {
+            localStorage.setItem(msg.key, msg.data)
+            createDownload(msg.key)
+        }
+
+      } else {
+        let link
+        let urls = msg.data;
+        let urlsList = document.getElementById('urls');
+        urlsList.innerHTML = '';
+        if (urls === "Не найдено ключевое слово") {
+          link = document.createElement('div');
+          link.innerHTML = 'Не найдено';
+          urlsList.appendChild(link);
+        } else {
+          urls.forEach((url) => {
+            let container = document.createElement('div');
+            container.style.marginBottom = '10px';
+
+            a = document.createElement('a');
+            a.innerHTML = url;
+            container.appendChild(a);
+
+            const downloadButton = document.createElement('button');
+            downloadButton.innerHTML = 'Скачать';
+            downloadButton.style.marginLeft = '10px';
+            container.appendChild(downloadButton);
+
+            urlsList.appendChild(container);
+
+            downloadButton.addEventListener('click', function() {
+              download(url);
+            });
+          });
+        }
+      }
+      
+    };
+
+    socket.onclose = function(event) {
+      console.log('Disconnected from server');
+    };
+
+    function getUrls() {
+      const keyword = document.getElementById('keyword').value;
+      socket.send(JSON.stringify({type: "text", data: keyword}));
+    }
+
+    function download(url) {
+        socket.send(JSON.stringify({type: "url", data: url}))
+
+    }
+
+    function show(url) {
+        const img = document.querySelector("img");
+        img.src = localStorage.getItem(url)
+    }
+
+    function createDownload(url) {
+      let div = document.createElement('div')
+      div.style.marginTop = '10px'
+      let a = document.createElement('a');
+      a.innerHTML = url;
+      div.appendChild(a)
+      
+
+      const showButton = document.createElement('button');
+      showButton.innerHTML = 'Показать';
+      showButton.style.marginLeft = '10px';
+      div.appendChild(showButton);
+
+      showContainer.appendChild(div);
+
+
+      showButton.addEventListener('click', function() {
+        show(url);
+      });
+    }
+  </script>
+</body>
+</html>
