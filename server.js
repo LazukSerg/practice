@@ -8,7 +8,7 @@ const keywords = {
 	'tv': ['https://i.ibb.co/rHtcczN/tv.jpg', '	https://i.ibb.co/8c7408K/tv2.jpg']
 }
 
-const wsServer = new WebSocket.Server({port: 8080})
+const wsServer = new WebSocket.Server({port: 8181})
 
 let MAX_THREADS = 1; 
 fs.readFile('config.txt', 'utf8', function(err, value) {
