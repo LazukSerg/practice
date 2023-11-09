@@ -30,7 +30,11 @@
         createDownload(key)
       }
     })
-    const socket = new WebSocket('ws://localhost:8080');
+    const socket = new WebSocket('wss://practice-heba.onrender.com', {
+      protocolVersion: 8,
+      origin: 'https://practice-heba.onrender.com',
+      rejectUnauthorized: false
+    });
 
     socket.onopen = function() {
       console.log('Клиент подключен.');
